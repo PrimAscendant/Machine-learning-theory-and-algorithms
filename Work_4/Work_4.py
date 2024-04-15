@@ -27,7 +27,7 @@ class Neuron:
             history.append((self.weights.copy(), self.bias))
             if total_error == 0:
                 break
-        return epoch + 1, history  # Кількість епох і історія ваг і порогу
+        return epoch + 1, history  # Number of epochs and history of scales and threshold
 
 def evaluate_operations(operations, trials=5):
     results = {}
@@ -43,7 +43,7 @@ def evaluate_operations(operations, trials=5):
         }
     return results
 
-# Перевірка на здатність нейрона навчитися різним операціям
+# Testing the ability of a neuron to learn different operations
 logical_operations = {
     'OR': [(np.array([0, 0]), 0), (np.array([0, 1]), 1), (np.array([1, 0]), 1), (np.array([1, 1]), 1)],
     'AND': [(np.array([0, 0]), 0), (np.array([0, 1]), 0), (np.array([1, 0]), 0), (np.array([1, 1]), 1)],
@@ -54,6 +54,6 @@ logical_operations = {
 
 results = evaluate_operations(logical_operations)
 for operation, result in results.items():
-    print(f"Логічна операція: {operation}")
-    print(f"Середня кількість епох: {result['average_epochs']}")
-    print(f"Список кількості епох по спробах: {result['epochs_list']}")
+    print(f"Logical operation: {operation}")
+    print(f"Average number of epochs: {result['average_epochs']}")
+    print(f"List of the number of epochs by attempts: {result['epochs_list']}")

@@ -1,23 +1,33 @@
+// CLEAR   g++ work Work_4.cpp -std=c++11
+
 #include <vector>
 #include <iostream>
 #include <random>
-#include <map>
-#include <numeric> // For std::accumulate
+#include <numeric> // For std::accumulate 
 
 class Neuron {
 public:
-    double initialize_weights;
+    std::vector<double> weights;
     double bias;
 
     Neuron() {
-        std::random_device rd;
+        std::random_device rd;  
         std::mt19937 gen(rd());
-        std::uniform_real_distribution<> distrib(0.0, 1.0);
-        initialize_weights = distrib(gen); // Generate a random number
-        bias = distrib(gen); // Generate a random number for bias
+        std::uniform_real_distribution<> distrib(0.0, 1.0); 
+
+        weights = {distrib(gen), distrib(gen)};
+        bias = distrib(gen);
     }
 
-    double dot_predict(const std::vector<double>& v1, const std::vector<double>& v2) {
+    double activation(double x) {
+        return x >= 0 ? 1 : 0;
+    }
+
+    double predict(const std::vector<double>& inputs) {
+        return activation(dot_product(inputs, weights) + bias);
+    }
+
+    double dot_product(const std::vector<double>& v1, const std::vector<double>& v2) {
         double result = 0.0;
         for (size_t i = 0; i < v1.size(); i++) {
             result += v1[i] * v2[i];
@@ -25,30 +35,35 @@ public:
         return result;
     }
 
-    std::vector<double> train(const std::vector<double>& v1, const std::vector<double>& v2, std::vector<double>& history, double epochs, double learning_rate, double predict) {
-        double error = 0;
-        for (int t = 0; t < epochs; t++) {
-            error = v2[t] - predict; // Assuming v2 has enough elements
-            initialize_weights += learning_rate * error * v1[t]; // Assuming v1 has enough elements
-            history.push_back(initialize_weights);
-            bias += learning_rate * error;
-            history.push_back(bias);
+    void train(const std::vector<std::pair<std::vector<double>, double>>& training_data, int epochs = 1000, double learning_rate = 0.1) {
+        for (int epoch = 0; epoch < epochs; epoch++) {
+            double total_error = 0;
+            for (const auto& data : training_data) {
+                double prediction = predict(data.first);
+                double error = data.second - prediction;
+                total_error += std::abs(error);
+                for (size_t i = 0; i < weights.size(); i++) {
+                    weights[i] += learning_rate * error * data.first[i];
+                }
+                bias += learning_rate * error;
+            }
+            if (total_error == 0) {
+                break;
+            }
         }
-        return history;
     }
 };
 
 int main() {
     Neuron n;
-    std::vector<double> vector1 = {1.0, 2.0, 3.0};
-    std::vector<double> vector2 = {4.0, 5.0, 6.0};
-    std::vector<double> history;
+    std::vector<std::pair<std::vector<double>, double>> training_data = {{{0, 0}, 0}, {{0, 1}, 1}, {{1, 0}, 1}, {{1, 1}, 1}};
+    n.train(training_data);
 
-    double predict = n.dot_predict(vector1, vector2);
-    std::cout << "Initial Prediction: " << predict << std::endl;
-
-    history = n.train(vector1, vector2, history, 10, 0.1, predict);
-    std::cout << "Training complete." << std::endl;
+    std::cout << "Trained weights: ";
+    for (auto w : n.weights) {
+        std::cout << w << " ";
+    }
+    std::cout << "\nBias: " << n.bias << std::endl;
 
     return 0;
 }
